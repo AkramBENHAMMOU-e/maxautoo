@@ -1,4 +1,6 @@
 {
   "version": 2,
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "buildCommand": "cd car-rental-app && npm install && npm run build",
+  "outputDirectory": "car-rental-app/.next"
 } 
