@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ interface BookingData {
   bookingId: string;
 }
 
-export default function BookingConfirmationPage() {
+function BookingConfirmationContent() {
   const searchParams = useSearchParams();
   const [success, setSuccess] = useState(false);
   const [bookingId, setBookingId] = useState("");
@@ -167,5 +167,18 @@ export default function BookingConfirmationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BookingConfirmationPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-3xl font-bold mb-4">Chargement...</h1>
+        <p className="mb-8">Traitement de votre réservation...</p>
+      </div>
+    }>
+      <BookingConfirmationContent />
+    </Suspense>
   );
 }

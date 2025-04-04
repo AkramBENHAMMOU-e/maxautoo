@@ -6,6 +6,11 @@ interface CloudinaryUploadWidgetProps {
   onUpload: (url: string) => void;
 }
 
+interface CloudinaryUploadWidgetInfo {
+  secure_url: string;
+  [key: string]: unknown;
+}
+
 export function CloudinaryUploadWidget({ onUpload }: CloudinaryUploadWidgetProps) {
   return (
     <CldUploadWidget
@@ -32,8 +37,8 @@ export function CloudinaryUploadWidget({ onUpload }: CloudinaryUploadWidgetProps
           }
         }
       }}
-      onSuccess={(result: any) => {
-        if (result.info && result.info.secure_url) {
+      onSuccess={(result) => {
+        if (result.info && typeof result.info === 'object' && 'secure_url' in result.info) {
           onUpload(result.info.secure_url);
         }
       }}

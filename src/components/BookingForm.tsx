@@ -13,8 +13,16 @@ interface Car {
   id: string;
   brand: string;
   model: string;
+  year: number;
+  type: string;
+  transmission: string;
+  seats: number;
   price: number;
   image: string;
+  description: string;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface BookingFormProps {

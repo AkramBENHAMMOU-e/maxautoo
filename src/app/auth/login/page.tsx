@@ -7,8 +7,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Suspense } from "react";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/client/cars";
@@ -118,5 +119,26 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto flex items-center justify-center min-h-screen py-8">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">
+              Connexion
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            Chargement...
+          </CardContent>
+        </Card>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 } 

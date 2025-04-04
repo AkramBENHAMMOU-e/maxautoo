@@ -25,7 +25,7 @@ export async function uploadToCloudinary(file: File): Promise<CloudinaryUploadRe
     console.log('Configuration Cloudinary:', { cloudName, uploadPreset });
     
     // Conversion du fichier en ArrayBuffer/Blob si nécessaire
-    let fileToUpload: File | Blob = file;
+    const fileToUpload: File | Blob = file;
     
     // Création du FormData
     const formData = new FormData();

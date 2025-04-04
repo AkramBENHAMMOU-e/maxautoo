@@ -3,8 +3,9 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
+import { Suspense } from "react";
 
-export default function AuthErrorPage() {
+function ErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
@@ -34,5 +35,19 @@ export default function AuthErrorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8 text-center">
+          Chargement...
+        </div>
+      </div>
+    }>
+      <ErrorContent />
+    </Suspense>
   );
 } 

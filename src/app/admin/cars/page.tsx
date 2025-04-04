@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import { CarsClient } from './components/cars-client';
+import { Prisma } from '@prisma/client';
 
 // Fonction pour récupérer les voitures avec filtres
 async function getCars(
@@ -11,7 +12,7 @@ async function getCars(
   const status = params.status ? (params.status as string) : undefined;
 
   // Construire la requête
-  const where: any = {};
+  const where: Prisma.CarWhereInput = {};
 
   // Filtre par statut
   if (status && status !== 'all') {

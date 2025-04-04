@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
+import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
@@ -8,7 +9,7 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
-    let where: any = {};
+    const where: Prisma.CarWhereInput = {};
 
     // Filtrer par statut si spécifié
     if (status) {
@@ -18,9 +19,9 @@ export async function GET(req: NextRequest) {
     // Recherche par marque, modèle ou type si spécifié
     if (search) {
       where.OR = [
-        { brand: { contains: search, mode: "insensitive" } },
-        { model: { contains: search, mode: "insensitive" } },
-        { type: { contains: search, mode: "insensitive" } },
+        { brand: { contains: search } },
+        { model: { contains: search } },
+        { type: { contains: search } },
       ];
     }
 

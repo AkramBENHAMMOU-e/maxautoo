@@ -5,13 +5,14 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
-    dirs: ['src'],
   },
   typescript: {
     ignoreBuildErrors: true,
   },
   experimental: {
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ["localhost:3000"]
+    },
   },
   output: 'standalone',
 };

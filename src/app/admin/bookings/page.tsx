@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import { BookingsClient } from './components/bookings-client';
+import { Prisma } from '@prisma/client';
 
 // Fonction pour récupérer les réservations avec filtres
 async function getBookings(
@@ -9,7 +10,7 @@ async function getBookings(
   const status = params.status ? (params.status as string) : undefined;
   const search = params.search ? (params.search as string) : undefined;
 
-  const where: any = {};
+  const where: Prisma.BookingWhereInput = {};
 
   // Filtre par statut
   if (status && status !== 'all') {

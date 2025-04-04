@@ -8,5 +8,13 @@
     "prefer-const": "off",
     "no-var": "off",
     "@typescript-eslint/no-empty-object-type": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/prisma.ts"],
+      "rules": {
+        "no-var": "off"
+      }
+    }
+  ]
 } 

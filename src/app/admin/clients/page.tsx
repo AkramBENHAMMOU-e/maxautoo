@@ -1,9 +1,20 @@
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
+import { Prisma, User } from '@prisma/client';
 import { Search, Filter, UserPlus, Download, RefreshCw } from 'lucide-react';
 import ClientActions from '@/components/admin/ClientActions';
 import { format } from 'date-fns';
 import { ClientsClient } from './components/clients-client';
+
+// Type pour le client avec son nombre de réservations et sa dernière réservation
+interface ClientWithBookings extends User {
+  _count: {
+    bookings: number;
+  };
+  bookings: {
+    createdAt: Date;
+  }[];
+}
 
 // Fonction pour récupérer les clients avec filtres
 async function getClients(
@@ -14,7 +25,7 @@ async function getClients(
   const sort = params.sort ? (params.sort as string) : 'recent';
 
   // Construire la requête
-  const where: any = {
+  const where: Prisma.UserWhereInput = {
     role: 'USER', // Uniquement les utilisateurs clients
   };
 
@@ -76,7 +87,7 @@ async function getClients(
 }
 
 // Fonction pour exporter les clients en CSV
-function generateCSV(clients: any[]) {
+function generateCSV(clients: ClientWithBookings[]) {
   const headers = ['ID', 'Email', 'Date d\'inscription', 'Nombre de réservations', 'Dernière réservation'];
   
   const rows = clients.map((client) => [

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
-import { hash } from 'bcrypt';
+import { hash } from 'bcryptjs';
 
 // Middleware de vérification admin
 async function verifyAdmin() {
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     const where = search
       ? {
           OR: [
-            { email: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search } },
           ],
         }
       : {};

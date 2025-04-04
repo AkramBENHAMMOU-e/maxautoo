@@ -182,12 +182,13 @@ export default function CarsListPage() {
               {sortedCars.map((car) => (
                 <Card key={car.id} className="overflow-hidden border border-gray-200 hover:shadow-lg transition">
                   <div className="aspect-video relative">
-                    <img
+                    <Image
                       src={car.image || '/placeholder-car.jpg'}
                       alt={`${car.brand} ${car.model}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                     />
-                    <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                    <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full z-10">
                       {car.type}
                     </div>
                   </div>

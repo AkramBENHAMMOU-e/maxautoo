@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,54 +18,26 @@ import {
   Shield,
   CheckCircle2
 } from "lucide-react";
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 
-// Car type definition to replace 'any'
 interface Car {
   id: string;
-  name: string;
-  category: string;
+  brand: string;
+  model: string;
+  year: number;
+  type: string;
+  transmission: string;
+  seats: number;
   price: number;
   image: string;
-  specs: {
-    seats: number;
-    doors: number;
-    transmission: string;
-    fuelType: string;
-  }
+  description: string;
+  status: string;
 }
 
-// Temporary mock data - in a real app this would come from an API
-const carsData: Car[] = [
-  {
-    id: "1",
-    name: "Tesla Model 3",
-    category: "Electric",
-    price: 89,
-    image: "https://same-assets.com/3da9e3ddce17a2ff8dfff77f56db8a44-image.png",
-    specs: {
-      seats: 5,
-      doors: 4,
-      transmission: "Automatic",
-      fuelType: "Electric",
-    }
-  },
-  {
-    id: "2",
-    name: "BMW X5",
-    category: "SUV",
-    price: 120,
-    image: "https://same-assets.com/f0c9dbbf7e7c02a15f2e73b0e93ef64d-image.png",
-    specs: {
-      seats: 7,
-      doors: 5,
-      transmission: "Automatic",
-      fuelType: "Diesel",
-    }
-  },
-  // More cars would be here in a real implementation
-];
-
-export default function NewBookingPage() {
+function BookingForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -78,6 +50,7 @@ export default function NewBookingPage() {
 
   // Form state
   const [car, setCar] = useState<Car | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [pickupLocation, setPickupLocation] = useState("");
@@ -93,12 +66,27 @@ export default function NewBookingPage() {
 
   // Load car data and populate form from query params
   useEffect(() => {
-    if (carId) {
-      const foundCar = carsData.find(c => c.id === carId);
-      if (foundCar) {
-        setCar(foundCar);
+    async function fetchCarData() {
+      if (carId) {
+        try {
+          const response = await fetch(`/api/cars/${carId}`);
+          if (response.ok) {
+            const carData = await response.json();
+            setCar(carData);
+          } else {
+            console.error('Failed to fetch car data');
+          }
+        } catch (error) {
+          console.error('Error fetching car data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
       }
     }
+
+    fetchCarData();
 
     if (startDateParam) {
       setStartDate(new Date(startDateParam));
@@ -462,14 +450,14 @@ export default function NewBookingPage() {
               <div className="relative h-16 w-24 rounded bg-gray-100 overflow-hidden">
                 <Image
                   src={car.image}
-                  alt={car.name}
+                  alt={car.brand}
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="ml-4">
-                <h3 className="font-bold">{car.name}</h3>
-                <span className="text-sm text-gray-500">{car.category}</span>
+                <h3 className="font-bold">{car.brand} {car.model}</h3>
+                <span className="text-sm text-gray-500">{car.type}</span>
               </div>
             </div>
 
@@ -555,5 +543,18 @@ export default function NewBookingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function NewBookingPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-12 text-center">
+        <h1 className="text-3xl font-bold mb-4">Chargement...</h1>
+        <p className="mb-8">Préparation de votre réservation...</p>
+      </div>
+    }>
+      <BookingForm />
+    </Suspense>
   );
 }
