@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Car } from "@prisma/client";
+import { uploadToCloudinaryDirect } from "@/lib/cloudinary";
 
 interface CarFormProps {
   car?: Car;
@@ -57,7 +58,7 @@ export function CarForm({ car, isEditing = false }: CarFormProps) {
       
       let imageUrl = '';
       
-      // Si nous avons un fichier image, uploader via notre propre API
+      // Si nous avons un fichier image, uploader directement vers Cloudinary
       if (fileInput?.files?.[0]) {
         const file = fileInput.files[0];
         console.log('Image sélectionnée:', { 
@@ -67,44 +68,56 @@ export function CarForm({ car, isEditing = false }: CarFormProps) {
         });
         
         try {
-          // Créer formData pour l'upload vers notre API
-          const uploadData = new FormData();
-          uploadData.append('file', file);
+          toast.info("Upload de l'image en cours...");
           
-          // Utiliser notre propre API d'upload
-          const uploadResponse = await fetch('/api/upload', {
-            method: 'POST',
-            body: uploadData
-          });
+          // Tenter d'abord l'upload direct vers Cloudinary
+          const result = await uploadToCloudinaryDirect(file);
           
-          if (!uploadResponse.ok) {
-            const errorText = await uploadResponse.text();
-            console.error('Erreur upload:', errorText);
-            // En cas d'erreur, utiliser l'image par défaut
-            imageUrl = 'https://cdn-icons-png.flaticon.com/512/741/741407.png';
-            toast.warning("Impossible d'uploader l'image, utilisation d'une image par défaut");
+          if (result) {
+            // Upload direct réussi
+            imageUrl = result.secure_url;
+            console.log('Image uploadée avec succès via upload direct:', imageUrl);
+            toast.success("Image uploadée avec succès");
           } else {
-            const uploadResult = await uploadResponse.json();
-            if (uploadResult.success) {
-              imageUrl = uploadResult.url;
-              console.log('Image uploadée avec succès:', imageUrl);
-            } else {
-              imageUrl = 'https://cdn-icons-png.flaticon.com/512/741/741407.png';
-              toast.warning("Impossible d'uploader l'image, utilisation d'une image par défaut");
+            // Si l'upload direct échoue, on utilise l'API locale
+            console.log('Fallback vers API locale d\'upload');
+            const uploadData = new FormData();
+            uploadData.append('file', file);
+            
+            const uploadResponse = await fetch('/api/upload', {
+              method: 'POST',
+              body: uploadData
+            });
+            
+            if (!uploadResponse.ok) {
+              throw new Error(`Erreur API upload: ${uploadResponse.status}`);
             }
+            
+            const uploadResult = await uploadResponse.json();
+            
+            if (!uploadResult.success) {
+              throw new Error(uploadResult.error || "Échec de l'upload d'image");
+            }
+            
+            imageUrl = uploadResult.url;
+            console.log('Image uploadée avec succès via API locale:', imageUrl);
           }
         } catch (uploadError) {
           console.error('Erreur d\'upload:', uploadError);
-          // En cas d'erreur, utiliser l'image par défaut
+          toast.error(`Erreur d'upload: ${uploadError instanceof Error ? uploadError.message : 'Erreur inconnue'}`);
+          
+          // En cas d'échec complet, utiliser une image par défaut
           imageUrl = 'https://cdn-icons-png.flaticon.com/512/741/741407.png';
-          toast.warning("Impossible d'uploader l'image, utilisation d'une image par défaut");
+          console.log('Utilisation d\'une image par défaut:', imageUrl);
+          toast.warning("Utilisation d'une image par défaut");
         }
       } else if (isEditing && car?.image) {
         // En mode édition, conserver l'image existante
         imageUrl = car.image;
-      } else {
-        // Image par défaut si aucune image fournie
+      } else if (!isEditing) {
+        // En mode création, utiliser une image par défaut si aucune n'est fournie
         imageUrl = 'https://cdn-icons-png.flaticon.com/512/741/741407.png';
+        toast.warning("Aucune image sélectionnée, utilisation d'une image par défaut");
       }
       
       // Préparer les données pour l'API
@@ -134,8 +147,15 @@ export function CarForm({ car, isEditing = false }: CarFormProps) {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Erreur réponse:', errorText);
-        throw new Error(`Erreur ${response.status}: ${errorText}`);
+        console.error('Erreur réponse API voiture:', errorText);
+        try {
+          const errorJson = JSON.parse(errorText);
+          toast.error(errorJson.error || `Erreur ${response.status}`);
+        } catch {
+          toast.error(`Erreur ${response.status}: ${errorText}`);
+        }
+        setLoading(false);
+        return;
       }
 
       toast.success(isEditing ? 'Voiture mise à jour avec succès' : 'Voiture ajoutée avec succès');
