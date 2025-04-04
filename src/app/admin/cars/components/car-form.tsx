@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Car } from "@prisma/client";
-import { uploadToCloudinaryDirect } from "@/lib/cloudinary";
+// Suppression de l'import direct de Cloudinary car nous utiliserons notre proxy API
+// import { uploadToCloudinaryDirect } from "@/lib/cloudinary";
 
 interface CarFormProps {
   car?: Car;
@@ -51,6 +52,15 @@ export function CarForm({ car, isEditing = false }: CarFormProps) {
     setLoading(true);
 
     try {
+      console.log('Environnement:', {
+        isProduction: process.env.NODE_ENV === 'production',
+        cloudinaryVars: {
+          cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+          hasCloudName: !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+          hasUploadPreset: !!process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+        }
+      });
+
       // Récupérer l'image si elle existe
       const fileInput = document.querySelector<HTMLInputElement>('input[name="image"]');
       console.log('File input:', fileInput);
@@ -58,7 +68,7 @@ export function CarForm({ car, isEditing = false }: CarFormProps) {
       
       let imageUrl = '';
       
-      // Si nous avons un fichier image, uploader directement vers Cloudinary
+      // Si nous avons un fichier image, uploader via notre API proxy
       if (fileInput?.files?.[0]) {
         const file = fileInput.files[0];
         console.log('Image sélectionnée:', { 
@@ -70,16 +80,37 @@ export function CarForm({ car, isEditing = false }: CarFormProps) {
         try {
           toast.info("Upload de l'image en cours...");
           
-          // Tenter d'abord l'upload direct vers Cloudinary
-          const result = await uploadToCloudinaryDirect(file);
+          // Utiliser notre API proxy pour l'upload
+          const uploadData = new FormData();
+          uploadData.append('file', file);
           
-          if (result) {
-            // Upload direct réussi
-            imageUrl = result.secure_url;
-            console.log('Image uploadée avec succès via upload direct:', imageUrl);
-            toast.success("Image uploadée avec succès");
-          } else {
-            // Si l'upload direct échoue, on utilise l'API locale
+          const uploadResponse = await fetch('/api/cloudinary', {
+            method: 'POST',
+            body: uploadData
+          });
+          
+          if (!uploadResponse.ok) {
+            const errorText = await uploadResponse.text();
+            console.error('Erreur upload:', errorText);
+            throw new Error(`Erreur API upload: ${uploadResponse.status} - ${errorText}`);
+          }
+          
+          const uploadResult = await uploadResponse.json();
+          console.log('Résultat de l\'upload:', uploadResult);
+          
+          if (!uploadResult.success) {
+            throw new Error(uploadResult.error || "Échec de l'upload d'image");
+          }
+          
+          imageUrl = uploadResult.url;
+          console.log('Image uploadée avec succès:', imageUrl);
+          toast.success("Image uploadée avec succès");
+        } catch (uploadError) {
+          console.error('Erreur d\'upload:', uploadError);
+          toast.error(`Erreur d'upload: ${uploadError instanceof Error ? uploadError.message : 'Erreur inconnue'}`);
+          
+          // En cas d'échec, on fait un fallback vers l'API locale
+          try {
             console.log('Fallback vers API locale d\'upload');
             const uploadData = new FormData();
             uploadData.append('file', file);
@@ -90,26 +121,26 @@ export function CarForm({ car, isEditing = false }: CarFormProps) {
             });
             
             if (!uploadResponse.ok) {
-              throw new Error(`Erreur API upload: ${uploadResponse.status}`);
+              throw new Error(`Erreur API locale: ${uploadResponse.status}`);
             }
             
             const uploadResult = await uploadResponse.json();
             
             if (!uploadResult.success) {
-              throw new Error(uploadResult.error || "Échec de l'upload d'image");
+              throw new Error(uploadResult.error || "Échec de l'upload local d'image");
             }
             
             imageUrl = uploadResult.url;
             console.log('Image uploadée avec succès via API locale:', imageUrl);
+            toast.success("Image uploadée avec succès via méthode alternative");
+          } catch (localUploadError) {
+            console.error('Erreur d\'upload local:', localUploadError);
+            
+            // En cas d'échec complet, utiliser une image par défaut
+            imageUrl = 'https://cdn-icons-png.flaticon.com/512/741/741407.png';
+            console.log('Utilisation d\'une image par défaut:', imageUrl);
+            toast.warning("Utilisation d'une image par défaut");
           }
-        } catch (uploadError) {
-          console.error('Erreur d\'upload:', uploadError);
-          toast.error(`Erreur d'upload: ${uploadError instanceof Error ? uploadError.message : 'Erreur inconnue'}`);
-          
-          // En cas d'échec complet, utiliser une image par défaut
-          imageUrl = 'https://cdn-icons-png.flaticon.com/512/741/741407.png';
-          console.log('Utilisation d\'une image par défaut:', imageUrl);
-          toast.warning("Utilisation d'une image par défaut");
         }
       } else if (isEditing && car?.image) {
         // En mode édition, conserver l'image existante
