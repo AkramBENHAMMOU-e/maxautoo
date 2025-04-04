@@ -2,6 +2,20 @@
 const nextConfig = {
   images: {
     domains: ['res.cloudinary.com', 'images.pexels.com', 'cdn-icons-png.flaticon.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn-icons-png.flaticon.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+      }
+    ],
   },
   eslint: {
     ignoreDuringBuilds: true,

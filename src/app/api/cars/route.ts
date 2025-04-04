@@ -47,7 +47,10 @@ export async function POST(req: NextRequest) {
   try {
     // Vérifier l'authentification et le rôle admin
     const user = await getCurrentUser();
+    console.log("Utilisateur authentifié:", user?.email, "Rôle:", user?.role);
+    
     if (!user || user.role !== "ADMIN") {
+      console.error("Authentification échouée:", { user: !!user, role: user?.role });
       return NextResponse.json(
         { error: "Non autorisé" },
         { status: 401 }
@@ -87,6 +90,7 @@ export async function POST(req: NextRequest) {
 
     // Si des champs sont manquants, renvoyer une erreur détaillée
     if (missingFields.length > 0) {
+      console.error("Validation échouée - champs manquants:", missingFields);
       return NextResponse.json(
         { 
           error: "Certains champs requis sont manquants", 
@@ -95,6 +99,23 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Validation supplémentaire de l'URL de l'image
+    // (Désactivée temporairement pour faciliter le déploiement)
+    /* 
+    if (!image.startsWith("http") && !image.startsWith("/uploads/")) {
+      console.error("URL d'image invalide:", image);
+      return NextResponse.json(
+        { error: "L'URL de l'image n'est pas valide" },
+        { status: 400 }
+      );
+    }
+    */
+
+    console.log("Création de la voiture avec les données validées:", {
+      brand, model, year, type, transmission, seats, price, status, 
+      image: image.substring(0, 50) + "..." // Tronquer l'URL pour les logs
+    });
 
     // Créer la voiture dans la base de données
     const car = await prisma.car.create({
@@ -112,6 +133,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    console.log("Voiture créée avec succès:", car.id);
     return NextResponse.json(car, { status: 201 });
   } catch (error) {
     console.error("[API_CARS_POST]", error);

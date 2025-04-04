@@ -19,7 +19,7 @@ export async function uploadToCloudinary(file: File): Promise<CloudinaryUploadRe
     });
 
     // Utiliser les variables d'environnement pour la configuration
-    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dz7wjdmgy';
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dnha4cj0w';
     const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'car_rental_app';
     
     console.log('Configuration Cloudinary:', { 
@@ -88,7 +88,7 @@ export async function uploadToCloudinaryDirect(file: File): Promise<CloudinaryUp
     }
     
     // Valeurs hardcodées pour l'upload direct côté client
-    const cloudName = 'dz7wjdmgy';
+    const cloudName = 'dnha4cj0w';
     const uploadPreset = 'car_rental_app';
     
     console.log('Upload direct vers Cloudinary avec:', { 
