@@ -94,11 +94,15 @@ async function getCarDetails(id: string) {
   return car;
 }
 
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
 export default async function CarDetailsPage({
   params,
-}: {
-  params: { id: string };
-}) {
+}: PageProps) {
   const session = await getServerSession(authOptions);
   const car = await getCarDetails(params.id);
 

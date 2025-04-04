@@ -38,115 +38,114 @@ export async function GET() {
 }
 
 // POST /api/bookings - Créer une nouvelle réservation
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.email) {
+
+    if (!session?.user) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const body = await request.json();
+    // Vérifier que l'utilisateur existe dans la base de données
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id }
+    });
 
-    // Validation des données requises
-    if (!body.carId || !body.startDate || !body.endDate) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'Toutes les informations sont requises' },
+        { error: "Utilisateur non trouvé dans la base de données" },
+        { status: 404 }
+      );
+    }
+
+    const body = await req.json();
+    const { carId, startDate, endDate, totalPrice, whatsappNumber } = body;
+
+    // Validation des données
+    if (!carId || !startDate || !endDate || !totalPrice) {
+      return NextResponse.json(
+        { error: "Données manquantes" },
         { status: 400 }
       );
     }
 
     // Vérifier si la voiture est disponible
     const car = await prisma.car.findUnique({
-      where: { id: body.carId }
+      where: { id: carId },
     });
 
     if (!car) {
       return NextResponse.json(
-        { error: 'Voiture non trouvée' },
+        { error: "Voiture non trouvée" },
         { status: 404 }
       );
     }
 
     if (car.status !== 'available') {
       return NextResponse.json(
-        { error: 'Cette voiture n\'est pas disponible' },
+        { error: "Voiture non disponible" },
         { status: 400 }
       );
     }
 
-    // Vérifier si les dates ne chevauchent pas d'autres réservations
+    // Vérifier les conflits de réservation
     const existingBooking = await prisma.booking.findFirst({
       where: {
-        carId: body.carId,
-        OR: [
+        carId,
+        status: {
+          in: ['pending', 'confirmed']  // Ne vérifier que les réservations actives
+        },
+        AND: [
           {
-            AND: [
-              { startDate: { lte: new Date(body.startDate) } },
-              { endDate: { gte: new Date(body.startDate) } }
-            ]
+            startDate: {
+              lte: new Date(endDate),
+            },
           },
           {
-            AND: [
-              { startDate: { lte: new Date(body.endDate) } },
-              { endDate: { gte: new Date(body.endDate) } }
-            ]
-          }
-        ]
-      }
+            endDate: {
+              gte: new Date(startDate),
+            },
+          },
+        ],
+      },
     });
 
     if (existingBooking) {
       return NextResponse.json(
-        { error: 'Cette voiture est déjà réservée pour ces dates' },
+        { error: "La voiture est déjà réservée pour cette période" },
         { status: 400 }
       );
     }
 
     // Créer la réservation
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Utilisateur non trouvé' },
-        { status: 404 }
-      );
-    }
-
     const booking = await prisma.booking.create({
       data: {
-        startDate: new Date(body.startDate),
-        endDate: new Date(body.endDate),
+        userId: session.user.id,
+        carId: carId,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        totalPrice,
         status: 'pending',
-        totalPrice: body.totalPrice,
-        userId: user.id,
-        carId: body.carId,
-      },
-      include: {
-        car: true,
       },
     });
+
+    // Inclure le numéro WhatsApp dans la réponse pour la redirection
+    const bookingWithWhatsapp = {
+      ...booking,
+      whatsappNumber: whatsappNumber || null
+    };
 
     // Mettre à jour le statut de la voiture
     await prisma.car.update({
-      where: { id: body.carId },
-      data: { status: 'booked' },
+      where: { id: carId },
+      data: { status: 'rented' },
     });
 
-    return NextResponse.json(booking);
+    return NextResponse.json(bookingWithWhatsapp);
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return NextResponse.json(
-        { error: 'Erreur de validation des données' },
-        { status: 400 }
-      );
-    }
-    
     console.error('Erreur lors de la création de la réservation:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la création de la réservation' },
+      { error: "Erreur interne du serveur" },
       { status: 500 }
     );
   }
@@ -159,7 +158,7 @@ export async function PATCH(request: Request) {
     
     if (!session?.user?.email) {
       return NextResponse.json(
-        { error: 'Non autorisé' },
+        { error: "Non autorisé" },
         { status: 401 }
       );
     }
@@ -170,7 +169,7 @@ export async function PATCH(request: Request) {
 
     if (!id) {
       return NextResponse.json(
-        { error: 'ID de la réservation requis' },
+        { error: "ID de la réservation requis" },
         { status: 400 }
       );
     }
@@ -187,7 +186,7 @@ export async function PATCH(request: Request) {
 
     if (!existingBooking) {
       return NextResponse.json(
-        { error: 'Réservation non trouvée' },
+        { error: "Réservation non trouvée" },
         { status: 404 }
       );
     }
@@ -218,19 +217,19 @@ export async function PATCH(request: Request) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
-          { error: 'Réservation non trouvée' },
+          { error: "Réservation non trouvée" },
           { status: 404 }
         );
       }
       return NextResponse.json(
-        { error: 'Erreur de validation des données' },
+        { error: "Erreur de validation des données" },
         { status: 400 }
       );
     }
 
     console.error('Erreur lors de la mise à jour de la réservation:', error);
     return NextResponse.json(
-      { error: 'Erreur lors de la mise à jour de la réservation' },
+      { error: "Erreur lors de la mise à jour de la réservation" },
       { status: 500 }
     );
   }

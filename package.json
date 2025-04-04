@@ -4,12 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "db:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts",
+    "db:safe-seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/safe-seed.ts",
     "prisma:generate": "npx prisma generate",
-    "create-admin": "ts-node scripts/create-admin.ts"
+    "create-admin": "ts-node scripts/create-admin.ts",
+    "postinstall": "prisma generate",
+    "migrate:deploy": "node scripts/migrate-db.js",
+    "db:init": "node scripts/migrate-db.js && npm run db:seed",
+    "db:production": "node scripts/migrate-production.js",
+    "db:init-postgres": "node scripts/init-db.js",
+    "db:reset": "node scripts/reset-db.js",
+    "db:sync": "node scripts/sync-database.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",

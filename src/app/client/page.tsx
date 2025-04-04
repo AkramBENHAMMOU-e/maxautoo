@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { CalendarClock, Fuel, Car as CarIcon, Users, ChevronRight, Star, MapPin } from "lucide-react";
 import prisma from "@/lib/prisma";
+import { CarSlider } from "@/components/CarSlider";
 
 // Fonction pour récupérer les voitures en vedette
 async function getFeaturedCars() {
@@ -22,6 +23,23 @@ async function getFeaturedCars() {
     return cars;
   } catch (error) {
     console.error("Erreur lors de la récupération des voitures en vedette:", error);
+    return [];
+  }
+}
+
+// Fonction pour récupérer toutes les voitures disponibles
+async function getAvailableCars() {
+  try {
+    return await prisma.car.findMany({
+      where: {
+        status: "available"
+      },
+      orderBy: {
+        price: 'desc'
+      }
+    });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des voitures disponibles:", error);
     return [];
   }
 }
@@ -56,6 +74,8 @@ async function getHeroCar() {
 export default async function ClientHomePage() {
   // Récupérer les voitures en vedette
   const featuredCars = await getFeaturedCars();
+  // Récupérer toutes les voitures disponibles
+  const availableCars = await getAvailableCars();
   // Récupérer la voiture pour le hero
   const heroCar = await getHeroCar();
 
@@ -68,65 +88,57 @@ export default async function ClientHomePage() {
         <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-400 rounded-full filter blur-3xl opacity-10 translate-x-1/4 translate-y-1/4"></div>
         
         <div className="container mx-auto px-4 z-10 relative flex flex-col md:flex-row md:items-center">
-          <div className="max-w-2xl md:w-1/2 z-20">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              Louez votre <span className="text-white">Voiture</span><br />
-              <span className="text-blue-200">au Maroc</span>
+          <div className="md:w-1/2 space-y-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              Location de Voitures de Luxe au Maroc
             </h1>
-            <p className="text-xl mb-8 text-blue-100 leading-relaxed max-w-xl">
-              Location de voitures aux meilleurs prix dans tout le Royaume. Des véhicules adaptés pour vos déplacements professionnels ou vos voyages à travers les villes marocaines.
+            <p className="text-xl text-blue-100 max-w-lg">
+              Découvrez notre flotte de véhicules premium et profitez d'un service de location haut de gamme dans tout le Maroc.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
-              <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50 font-semibold rounded-full px-8 transition-all duration-300 hover:shadow-lg">
-                <Link href="/client/cars">
-                  <span className="flex items-center">
-                    Parcourir les Voitures
-                    <ChevronRight className="ml-2 h-5 w-5" />
-                  </span>
-                </Link>
-              </Button>
-              <Button asChild variant="default" size="lg" className="bg-blue-500 text-white hover:bg-blue-600 rounded-full px-6 transition-all duration-300 hover:shadow-lg">
-                <Link href="/client/booking">Vérifier la Réservation</Link>
-              </Button>
-            </div>
             
-            {heroCar && (
+            {availableCars.length > 0 ? (
               <div className="bg-blue-700/80 rounded-xl shadow-lg border border-blue-400/20 backdrop-blur-md p-4 transform hover:translate-y-[-4px] transition-all duration-300">
                 <div className="flex items-center gap-2 mb-2">
                   <Star className="h-5 w-5 text-white" fill="white" />
-                  <div className="text-sm font-medium text-blue-100">Découvrez notre véhicule premium :</div>
+                  <div className="text-sm font-medium text-blue-100">Nos véhicules disponibles :</div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-2xl md:text-3xl font-bold text-white lowercase">
-                    {heroCar.brand} {heroCar.model}
-                  </h3>
-                  <div className="text-xl font-bold text-white bg-blue-600 px-4 py-1 rounded-full">
-                    {heroCar.price}DH<span className="text-sm font-normal">/jour</span>
-                  </div>
+                <div className="space-y-2">
+                  {availableCars.map((car) => (
+                    <div key={car.id} className="flex items-center justify-between p-2 bg-blue-600/50 rounded-lg">
+                      <h3 className="text-lg font-bold text-white">
+                        {car.brand} {car.model}
+                      </h3>
+                      <div className="text-lg font-bold text-white bg-blue-500 px-3 py-1 rounded-full">
+                        {car.price}DH<span className="text-sm font-normal">/jour</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 <Button asChild variant="ghost" size="sm" className="mt-3 w-full text-white hover:bg-blue-600/50 flex justify-center items-center group">
-                  <Link href={`/client/cars/${heroCar.id}`}>
+                  <Link href="/client/cars">
                     <span className="flex items-center">
-                      Voir cette voiture
+                      Voir toutes les voitures
                       <ChevronRight className="ml-1 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
                     </span>
                   </Link>
                 </Button>
               </div>
+            ) : (
+              <div className="bg-blue-700/80 rounded-xl shadow-lg border border-blue-400/20 backdrop-blur-md p-4">
+                <div className="text-center py-4">
+                  <p className="text-white text-lg">Aucune voiture disponible pour le moment.</p>
+                  <p className="text-blue-100 text-sm mt-2">Veuillez réessayer plus tard.</p>
+                </div>
+              </div>
             )}
           </div>
           
           <div className="md:w-1/2 md:absolute md:right-0 md:top-1/2 md:transform md:-translate-y-1/2 mt-8 md:mt-0 z-10">
-            {heroCar && (
-              <div className="relative w-full h-[300px] md:h-[450px]">
-                <Image
-                  src={heroCar.image}
-                  alt={`${heroCar.brand} ${heroCar.model}`}
-                  fill
-                  className="object-contain z-10 drop-shadow-2xl transform hover:scale-105 transition-transform duration-500"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 via-transparent to-transparent z-0 md:hidden"></div>
+            {availableCars.length > 0 ? (
+              <CarSlider cars={availableCars} />
+            ) : (
+              <div className="relative w-full h-[300px] md:h-[450px] bg-gray-100 rounded-lg flex items-center justify-center">
+                <p className="text-gray-500">Aucune voiture disponible</p>
               </div>
             )}
           </div>

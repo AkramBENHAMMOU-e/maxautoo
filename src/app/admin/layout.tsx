@@ -16,7 +16,9 @@ import {
 
 // Define the custom event type
 interface SidebarToggleEvent extends Event {
-  detail: { collapsed: boolean };
+  detail?: {
+    open?: boolean;
+  };
 }
 
 // Declare the custom event for TypeScript
@@ -82,62 +84,47 @@ export default function AdminLayout({
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } lg:translate-x-0 transition-transform duration-300 ease-in-out`}
       >
-        <div className="flex flex-col h-full">
-          <div className="p-6 border-b">
-            <h2 className="text-2xl font-bold text-blue-600">MaxiAuto Admin</h2>
-            <p className="text-sm text-gray-500">Gestion de location au Maroc</p>
-          </div>
-          <nav className="flex-1 py-6 px-4 space-y-1">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center p-3 rounded-lg ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-600'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <item.icon className="h-5 w-5 mr-3" />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="p-4 border-t">
-            <button
-              onClick={async () => {
-                await signOut({ redirect: false });
-                router.push('/');
-              }}
-              className="flex items-center p-3 w-full text-left text-gray-700 hover:bg-gray-100 rounded-lg"
-            >
-              <LogOut className="h-5 w-5 mr-3" />
-              Déconnexion
-            </button>
+        <div className="p-6">
+          <div className="text-xl font-bold text-gray-800">
+            Car Rental Admin
           </div>
         </div>
+        <nav className="mt-6">
+          <ul className="space-y-2 px-4">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+              return (
+                <li key={item.name}>
+                  <a
+                    href={item.href}
+                    className={`flex items-center p-3 rounded-md transition-colors ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon
+                      size={20}
+                      className={isActive ? 'text-blue-600' : 'text-gray-400'}
+                    />
+                    <span className="ml-3">{item.name}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 min-h-screen">
         <main className="p-4 md:p-8">{children}</main>
       </div>
-
-      {/* Overlay for mobile sidebar */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   );
 }

@@ -25,11 +25,6 @@ const WhatsAppButton = () => {
       <span className="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-500 ease-in-out whitespace-nowrap">
         WhatsApp
       </span>
-      
-      {/* Badge de notification */}
-      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-        1
-      </span>
     </a>
   );
 };

@@ -79,11 +79,14 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { status } = body;
+    const { status, userId, carId, startDate, endDate, totalPrice, originalCarId } = body;
 
     // Vérifier que la réservation existe
     const existingBooking = await prisma.booking.findUnique({
       where: { id: params.id },
+      include: {
+        car: true
+      }
     });
 
     if (!existingBooking) {
@@ -93,10 +96,85 @@ export async function PATCH(
       );
     }
 
-    // Mettre à jour la réservation (uniquement le statut)
+    // Vérifier si la voiture a changé
+    const carChanged = originalCarId && carId !== originalCarId;
+
+    // Vérifier si les dates se chevauchent avec d'autres réservations pour la même voiture
+    if (carId && (startDate || endDate)) {
+      const startDateObj = startDate ? new Date(startDate) : existingBooking.startDate;
+      const endDateObj = endDate ? new Date(endDate) : existingBooking.endDate;
+
+      const existingBookings = await prisma.booking.findMany({
+        where: {
+          id: { not: params.id }, // Exclure la réservation actuelle
+          carId: carId,
+          status: { not: 'cancelled' },
+          AND: [
+            { startDate: { lte: endDateObj } },
+            { endDate: { gte: startDateObj } }
+          ]
+        }
+      });
+
+      if (existingBookings.length > 0) {
+        return NextResponse.json(
+          { error: 'La voiture est déjà réservée pour cette période' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Si la voiture a changé, mettre à jour le statut de l'ancienne voiture
+    if (carChanged && originalCarId) {
+      // Vérifier si l'ancienne voiture a d'autres réservations actives
+      const otherActiveBookings = await prisma.booking.findFirst({
+        where: {
+          id: { not: params.id },
+          carId: originalCarId,
+          status: { in: ['pending', 'confirmed'] }
+        }
+      });
+
+      // Si aucune autre réservation active, remettre la voiture comme disponible
+      if (!otherActiveBookings) {
+        await prisma.car.update({
+          where: { id: originalCarId },
+          data: { status: 'available' }
+        });
+      }
+
+      // Mettre à jour le statut de la nouvelle voiture si la réservation n'est pas annulée
+      if (status !== 'cancelled') {
+        await prisma.car.update({
+          where: { id: carId },
+          data: { status: 'booked' }
+        });
+      }
+    } else if (status === 'cancelled' && existingBooking.status !== 'cancelled') {
+      // Si la réservation est annulée, mettre à jour le statut de la voiture
+      await prisma.car.update({
+        where: { id: existingBooking.carId },
+        data: { status: 'available' }
+      });
+    } else if (status !== 'cancelled' && existingBooking.status === 'cancelled') {
+      // Si la réservation était annulée et ne l'est plus, mettre à jour le statut de la voiture
+      await prisma.car.update({
+        where: { id: carId || existingBooking.carId },
+        data: { status: 'booked' }
+      });
+    }
+
+    // Mettre à jour la réservation (uniquement les champs fournis)
     const updatedBooking = await prisma.booking.update({
       where: { id: params.id },
-      data: { status },
+      data: {
+        ...(status !== undefined && { status }),
+        ...(userId !== undefined && { userId }),
+        ...(carId !== undefined && { carId }),
+        ...(startDate !== undefined && { startDate: new Date(startDate) }),
+        ...(endDate !== undefined && { endDate: new Date(endDate) }),
+        ...(totalPrice !== undefined && { totalPrice }),
+      },
       include: {
         user: {
           select: {
@@ -146,10 +224,31 @@ export async function DELETE(
       );
     }
 
+    // Stocker l'ID de la voiture avant de supprimer la réservation
+    const carId = booking.carId;
+    
     // Supprimer la réservation
     await prisma.booking.delete({
       where: { id: params.id },
     });
+
+    // Vérifier s'il existe d'autres réservations actives pour cette voiture
+    const activeBookings = await prisma.booking.findFirst({
+      where: {
+        carId,
+        status: {
+          in: ['pending', 'confirmed']
+        }
+      }
+    });
+
+    // Si aucune autre réservation active, remettre la voiture comme disponible
+    if (!activeBookings) {
+      await prisma.car.update({
+        where: { id: carId },
+        data: { status: 'available' },
+      });
+    }
 
     return NextResponse.json(
       { message: 'Réservation supprimée avec succès' },
