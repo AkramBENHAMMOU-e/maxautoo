@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Home } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -54,7 +55,17 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="container mx-auto flex items-center justify-center min-h-screen py-8">
+    <div className="container mx-auto flex flex-col items-center justify-center min-h-screen py-8">
+      {/* Bouton retour à l'accueil */}
+      <div className="w-full max-w-md mb-4">
+        <Link href="/" passHref>
+          <Button variant="outline" className="flex items-center gap-2">
+            <Home size={16} />
+            <span>Retour à l'accueil</span>
+          </Button>
+        </Link>
+      </div>
+      
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">

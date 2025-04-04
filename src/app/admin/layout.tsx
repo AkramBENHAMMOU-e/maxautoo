@@ -49,6 +49,12 @@ export default function AdminLayout({
     }
   }, [session, status, router]);
 
+  // Fonction de déconnexion
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push('/');
+  };
+
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -86,14 +92,14 @@ export default function AdminLayout({
       <div
         className={`fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-lg transform ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 transition-transform duration-300 ease-in-out`}
+        } lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col`}
       >
         <div className="p-6">
           <div className="text-xl font-bold text-gray-800">
             Car Rental Admin
           </div>
         </div>
-        <nav className="mt-6">
+        <nav className="mt-6 flex-grow">
           <ul className="space-y-2 px-4">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
@@ -119,6 +125,17 @@ export default function AdminLayout({
             })}
           </ul>
         </nav>
+        
+        {/* Bouton de déconnexion */}
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full p-3 rounded-md text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <LogOut size={20} className="text-red-500" />
+            <span className="ml-3">Déconnexion</span>
+          </button>
+        </div>
       </div>
 
       {/* Main content */}
