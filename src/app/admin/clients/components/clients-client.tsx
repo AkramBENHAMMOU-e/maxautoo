@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, UserPlus, Download, RefreshCw } from 'lucide-react';
+import { Search, UserPlus, Download, RefreshCw, Mail, Calendar, BookOpen, Clock, ChevronDown } from 'lucide-react';
 import ClientActions from '@/components/admin/ClientActions';
 import { format } from 'date-fns';
+import { useState } from 'react';
 
 interface Client {
   id: string;
@@ -33,6 +34,7 @@ interface ClientsClientProps {
 
 export function ClientsClient({ clients, stats, searchQuery, currentSort }: ClientsClientProps) {
   const router = useRouter();
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const handleExport = () => {
     const headers = ['ID', 'Email', 'Date d\'inscription', 'Nombre de réservations', 'Dernière réservation'];
@@ -72,82 +74,93 @@ export function ClientsClient({ clients, stats, searchQuery, currentSort }: Clie
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Gestion des clients</h1>
+      {/* En-tête avec actions */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold">Gestion des clients</h1>
         
-        <div className="flex space-x-2 mt-4 md:mt-0">
+        <div className="flex flex-wrap gap-2">
           <Link
             href="/admin/clients/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
           >
             <UserPlus className="h-4 w-4" />
-            Nouveau client
+            <span className="md:inline hidden">Nouveau client</span>
+            <span className="md:hidden inline">Nouveau</span>
           </Link>
           
           <button
             onClick={handleExport}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
           >
             <Download className="h-4 w-4" />
-            Exporter
+            <span className="md:inline hidden">Exporter</span>
           </button>
           
           <Link
             href="/admin/clients"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
           >
             <RefreshCw className="h-4 w-4" />
-            Réinitialiser
+            <span className="md:inline hidden">Réinitialiser</span>
           </Link>
+
+          <button
+            onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+            className="md:hidden inline-flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 text-sm ml-auto"
+          >
+            <Search className="h-4 w-4" />
+            Filtres
+            <ChevronDown className={`h-4 w-4 transition-transform ${isFiltersOpen ? 'rotate-180' : ''}`} />
+          </button>
         </div>
       </div>
       
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-medium text-gray-500 mb-2">Nombre de clients</h3>
-          <p className="text-3xl font-bold">{stats.totalClients}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+          <h3 className="text-sm md:text-lg font-medium text-gray-500 mb-1 md:mb-2">Nombre de clients</h3>
+          <p className="text-2xl md:text-3xl font-bold">{stats.totalClients}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-medium text-gray-500 mb-2">Réservations totales</h3>
-          <p className="text-3xl font-bold">{stats.totalBookings}</p>
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+          <h3 className="text-sm md:text-lg font-medium text-gray-500 mb-1 md:mb-2">Réservations totales</h3>
+          <p className="text-2xl md:text-3xl font-bold">{stats.totalBookings}</p>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-medium text-gray-500 mb-2">Réservations / client</h3>
-          <p className="text-3xl font-bold">{stats.avgBookingsPerClient}</p>
+        <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+          <h3 className="text-sm md:text-lg font-medium text-gray-500 mb-1 md:mb-2">Réservations / client</h3>
+          <p className="text-2xl md:text-3xl font-bold">{stats.avgBookingsPerClient}</p>
         </div>
       </div>
       
       {/* Filtres */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className={`bg-white rounded-lg shadow-md p-4 md:p-6 mb-6 ${isFiltersOpen ? 'block' : 'md:block hidden'}`}>
         <div className="flex flex-col md:flex-row justify-between gap-4">
-          <div className="flex-grow max-w-md">
+          <div className="flex-grow max-w-full md:max-w-md">
             <form className="relative" method="GET">
               <input
                 type="text"
                 name="search"
                 placeholder="Rechercher par email..."
-                className="pl-12 pr-4 py-3 border border-blue-200 focus:border-blue-500 rounded-lg w-full bg-blue-50/50 focus:bg-white transition-all shadow-sm focus:shadow focus:outline-none"
+                className="pl-10 pr-4 py-2 md:py-3 border border-blue-200 focus:border-blue-500 rounded-lg w-full bg-blue-50/50 focus:bg-white transition-all shadow-sm focus:shadow focus:outline-none"
                 defaultValue={searchQuery}
               />
               <button
                 type="submit"
                 className="absolute left-0 top-0 h-full px-3 text-blue-500 hover:text-blue-700 transition-colors"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             </form>
           </div>
           
-          <div>
+          <div className="w-full md:w-auto">
             <form className="flex items-center gap-2">
-              <label htmlFor="sort" className="text-sm font-medium text-gray-700">
+              <label htmlFor="sort" className="text-sm font-medium text-gray-700 hidden md:inline">
                 Trier par:
               </label>
               <select
                 id="sort"
                 name="sort"
-                className="rounded-lg border-blue-200 bg-blue-50/50 focus:bg-white focus:border-blue-500 shadow-sm py-3 px-4 text-gray-700 font-medium transition-all focus:outline-none focus:shadow"
+                className="w-full md:w-auto rounded-lg border-blue-200 bg-blue-50/50 focus:bg-white focus:border-blue-500 shadow-sm py-2 md:py-3 px-3 md:px-4 text-gray-700 font-medium transition-all focus:outline-none focus:shadow"
                 defaultValue={currentSort}
                 onChange={(e) => handleSortChange(e.target.value)}
               >
@@ -162,8 +175,72 @@ export function ClientsClient({ clients, stats, searchQuery, currentSort }: Clie
         </div>
       </div>
       
-      {/* Tableau des clients */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      {/* Liste de clients pour mobile */}
+      <div className="md:hidden space-y-4">
+        {clients.length > 0 ? (
+          clients.map((client) => (
+            <div key={client.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div className="h-10 w-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                      <Mail className="h-5 w-5" />
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="font-medium text-gray-900">
+                        {client.email}
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        ID: {client.id.substring(0, 8)}
+                      </p>
+                    </div>
+                  </div>
+                  <ClientActions client={client} />
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 text-gray-400 mr-2" />
+                    <span>Inscrit le: {format(new Date(client.createdAt), 'dd/MM/yyyy')}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <BookOpen className="h-4 w-4 text-gray-400 mr-2" />
+                    <span>Réservations: {client._count.bookings}</span>
+                  </div>
+                  {client.bookings[0] && (
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                      <span>Dernière réservation: {format(new Date(client.bookings[0].createdAt), 'dd/MM/yyyy')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 flex justify-between items-center border-t">
+                <Link
+                  href={`/admin/bookings?search=${client.email}`}
+                  className="text-blue-600 text-sm hover:text-blue-800"
+                >
+                  Voir les réservations
+                </Link>
+                <Link 
+                  href={`/admin/clients/${client.id}`}
+                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Détails
+                </Link>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
+            Aucun client trouvé.
+          </div>
+        )}
+      </div>
+      
+      {/* Tableau des clients pour desktop */}
+      <div className="hidden md:block bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -223,6 +300,14 @@ export function ClientsClient({ clients, stats, searchQuery, currentSort }: Clie
           </table>
         </div>
       </div>
+
+      {/* Bouton d'action flottant pour mobile */}
+      <Link
+        href="/admin/clients/new"
+        className="md:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg text-white"
+      >
+        <UserPlus size={24} />
+      </Link>
     </div>
   );
 } 

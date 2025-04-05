@@ -64,7 +64,7 @@ export default async function CarDetailsPage({
               </div>
               <div>
                 <h3 className="font-semibold">Transmission</h3>
-                <p>{car.transmission}</p>
+                <p>{car.transmission && /^man/i.test(car.transmission) ? 'Manuelle' : 'Automatique'}</p>
               </div>
               <div>
                 <h3 className="font-semibold">Places</h3>

@@ -3,13 +3,13 @@
 import { useState } from "react";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Download, Filter, Plus, RefreshCw } from 'lucide-react';
+import { Download, Filter, Plus, RefreshCw, ChevronDown, CalendarRange, User, CreditCard, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import BookingActions from '@/components/admin/BookingActions';
 import { toast } from "@/components/ui/use-toast";
 import prisma from "@/lib/prisma";
-import { Booking, User, Car } from "@prisma/client";
+import { Booking, User as UserType, Car } from "@prisma/client";
 
 // Configuration des informations de l'entreprise (idéalement à déplacer dans un fichier de configuration)
 const COMPANY_INFO = {
@@ -71,6 +71,7 @@ interface BookingsClientProps {
 export function BookingsClient({ bookings, stats, currentStatus, searchQuery }: BookingsClientProps) {
   const router = useRouter();
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   // Ajouter un gestionnaire pour fermer le menu au clic à l'extérieur
   const handleClickOutside = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -682,6 +683,36 @@ export function BookingsClient({ bookings, stats, currentStatus, searchQuery }: 
     router.push(url.toString());
   };
 
+  // Obtenir la couleur et le texte du statut
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case 'confirmed':
+        return {
+          bgColor: 'bg-green-100',
+          textColor: 'text-green-800',
+          label: 'Confirmée'
+        };
+      case 'pending':
+        return {
+          bgColor: 'bg-yellow-100',
+          textColor: 'text-yellow-800',
+          label: 'En attente'
+        };
+      case 'cancelled':
+        return {
+          bgColor: 'bg-red-100',
+          textColor: 'text-red-800',
+          label: 'Annulée'
+        };
+      default:
+        return {
+          bgColor: 'bg-gray-100',
+          textColor: 'text-gray-800',
+          label: status
+        };
+    }
+  };
+
   const statusOptions = [
     { value: 'all', label: 'Tous les statuts' },
     { value: 'pending', label: 'En attente' },
@@ -691,35 +722,36 @@ export function BookingsClient({ bookings, stats, currentStatus, searchQuery }: 
 
   return (
     <div onClick={handleClickOutside}>
-      <div className="flex flex-wrap items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Gestion des réservations</h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold">Gestion des réservations</h1>
         
-        <div className="flex space-x-2 mt-4 md:mt-0">
+        <div className="flex flex-wrap gap-2">
           <Link
             href="/admin/bookings/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
           >
             <Plus className="h-4 w-4" />
-            Nouvelle réservation
+            <span className="md:inline hidden">Nouvelle réservation</span>
+            <span className="md:hidden inline">Nouvelle</span>
           </Link>
           
           <div className="relative export-menu-container">
             <button
               onClick={(e) => {
-                e.stopPropagation(); // Empêcher la propagation pour éviter que handleClickOutside ne s'active
+                e.stopPropagation(); // Empêcher la propagation
                 setIsExportMenuOpen(!isExportMenuOpen);
               }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              className="inline-flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
             >
               <Download className="h-4 w-4" />
-              Exporter
+              <span className="md:inline hidden">Exporter</span>
             </button>
             {isExportMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
                 <div className="py-1">
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // Empêcher la propagation
+                      e.stopPropagation();
                       handleExportCSV();
                     }}
                     className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
@@ -728,7 +760,7 @@ export function BookingsClient({ bookings, stats, currentStatus, searchQuery }: 
                   </button>
                   <button
                     onClick={(e) => {
-                      e.stopPropagation(); // Empêcher la propagation
+                      e.stopPropagation();
                       generateReport();
                     }}
                     className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
@@ -742,24 +774,33 @@ export function BookingsClient({ bookings, stats, currentStatus, searchQuery }: 
           
           <Link
             href="/admin/bookings"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+            className="inline-flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
           >
             <RefreshCw className="h-4 w-4" />
-            Réinitialiser
+            <span className="md:inline hidden">Réinitialiser</span>
           </Link>
+
+          <button
+            onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+            className="md:hidden inline-flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 text-sm ml-auto"
+          >
+            <Filter className="h-4 w-4" />
+            Filtres
+            <ChevronDown className={`h-4 w-4 transition-transform ${isFiltersOpen ? 'rotate-180' : ''}`} />
+          </button>
         </div>
       </div>
 
       {/* Filtres et statistiques */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className={`bg-white rounded-lg shadow-md p-4 md:p-6 mb-6 ${isFiltersOpen ? 'block' : 'md:block hidden'}`}>
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
-          <div className="flex-grow max-w-md">
+          <div className="flex-grow max-w-full md:max-w-md">
             <form className="relative" method="GET">
               <input
                 type="text"
                 name="search"
                 placeholder="Rechercher par client ou véhicule..."
-                className="pl-12 pr-4 py-3 border border-blue-200 focus:border-blue-500 rounded-lg w-full bg-blue-50/50 focus:bg-white transition-all shadow-sm focus:shadow focus:outline-none"
+                className="pl-12 pr-4 py-2 md:py-3 border border-blue-200 focus:border-blue-500 rounded-lg w-full bg-blue-50/50 focus:bg-white transition-all shadow-sm focus:shadow focus:outline-none"
                 defaultValue={searchQuery}
               />
               <button
@@ -773,13 +814,13 @@ export function BookingsClient({ bookings, stats, currentStatus, searchQuery }: 
           
           <div>
             <form className="flex items-center gap-2">
-              <label htmlFor="status" className="text-sm font-medium text-gray-700">
+              <label htmlFor="status" className="text-sm font-medium text-gray-700 hidden md:inline">
                 Statut:
               </label>
               <select
                 id="status"
                 name="status"
-                className="rounded-lg border-blue-200 bg-blue-50/50 focus:bg-white focus:border-blue-500 shadow-sm py-3 px-4 text-gray-700 font-medium transition-all focus:outline-none focus:shadow"
+                className="rounded-lg border-blue-200 bg-blue-50/50 focus:bg-white focus:border-blue-500 shadow-sm py-2 md:py-3 px-3 md:px-4 text-gray-700 font-medium transition-all focus:outline-none focus:shadow"
                 defaultValue={currentStatus}
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
@@ -793,19 +834,19 @@ export function BookingsClient({ bookings, stats, currentStatus, searchQuery }: 
           </div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
           {statusOptions.map((option) => (
             <Link
               key={option.value}
               href={`/admin/bookings?status=${option.value}`}
-              className={`block p-4 rounded-lg border ${
+              className={`block p-3 md:p-4 rounded-lg border ${
                 currentStatus === option.value
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:bg-gray-50'
               }`}
             >
-              <p className="text-sm text-gray-500">{option.label}</p>
-              <p className="text-2xl font-bold mt-1">
+              <p className="text-xs md:text-sm text-gray-500">{option.label}</p>
+              <p className="text-xl md:text-2xl font-bold mt-1">
                 {stats[option.value]}
               </p>
             </Link>
@@ -813,8 +854,86 @@ export function BookingsClient({ bookings, stats, currentStatus, searchQuery }: 
         </div>
       </div>
 
-      {/* Tableau des réservations */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      {/* Liste des réservations - Vue mobile sous forme de cartes */}
+      <div className="md:hidden space-y-4">
+        {bookings.length > 0 ? (
+          bookings.map((booking) => {
+            const statusInfo = getStatusInfo(booking.status);
+            return (
+              <div key={booking.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center">
+                      <img
+                        className="h-12 w-12 rounded object-cover mr-3"
+                        src={booking.car.image || '/placeholder-car.jpg'}
+                        alt={`${booking.car.brand} ${booking.car.model}`}
+                      />
+                      <div>
+                        <h3 className="font-medium text-gray-900">
+                          {booking.car.brand} {booking.car.model}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          ID: #{booking.id.substring(0, 6).toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusInfo.bgColor} ${statusInfo.textColor}`}>
+                        {statusInfo.label}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 text-gray-400 mr-2" />
+                      <span>{booking.user.email}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <CalendarRange className="h-4 w-4 text-gray-400 mr-2" />
+                      <span>
+                        {format(new Date(booking.startDate), 'dd MMM yyyy', { locale: fr })} - {format(new Date(booking.endDate), 'dd MMM yyyy', { locale: fr })}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <CreditCard className="h-4 w-4 text-gray-400 mr-2" />
+                      <span className="font-medium">{formatPrice(booking.totalPrice)}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="h-4 w-4 text-gray-400 mr-2" />
+                      <span>{format(new Date(booking.createdAt), 'dd/MM/yyyy HH:mm')}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 p-3 flex justify-between items-center border-t">
+                  <button
+                    onClick={() => generateReceipt(booking)}
+                    className="text-blue-600 text-sm hover:text-blue-800"
+                  >
+                    Reçu
+                  </button>
+                  <Link 
+                    href={`/admin/bookings/${booking.id}`}
+                    className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                  >
+                    Détails
+                  </Link>
+                  <BookingActions booking={booking} />
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
+            Aucune réservation trouvée.
+          </div>
+        )}
+      </div>
+
+      {/* Tableau des réservations - Vue desktop inchangée */}
+      <div className="hidden md:block bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -930,6 +1049,14 @@ export function BookingsClient({ bookings, stats, currentStatus, searchQuery }: 
           </table>
         </div>
       </div>
+
+      {/* Bouton d'action flottant pour mobile */}
+      <Link
+        href="/admin/bookings/new"
+        className="md:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg text-white"
+      >
+        <Plus size={24} />
+      </Link>
     </div>
   );
 } 

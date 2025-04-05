@@ -3,317 +3,298 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, Phone, Mail, Clock, CheckCircle, Loader2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { z } from "zod";
+import { Mail, Phone, MapPin, ArrowRight, Send, Check } from "lucide-react";
+
+const contactFormSchema = z.object({
+  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  email: z.string().email("Email invalide"),
+  phone: z.string().min(10, "Numéro de téléphone invalide"),
+  subject: z.string().min(5, "Le sujet doit contenir au moins 5 caractères"),
+  message: z.string().min(10, "Le message doit contenir au moins 10 caractères"),
+});
 
 export default function ContactPage() {
-  const { toast } = useToast();
-  const [formState, setFormState] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     subject: "",
-    message: ""
+    message: "",
   });
-
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormState(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Effacer les erreurs au fur et à mesure que l'utilisateur corrige
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateForm = () => {
+    try {
+      contactFormSchema.parse(formData);
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            newErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(newErrors);
+      }
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      toast.error("Veuillez corriger les erreurs dans le formulaire");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // Envoyer les données du formulaire à l'API
-      const response = await fetch('/api/contact', {
-        method: 'POST',
+      const response = await fetch("/api/contact", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formState),
+        body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Une erreur est survenue lors de l\'envoi du message');
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Une erreur est survenue");
       }
 
-      // Succès
-      setIsSubmitted(true);
-      setFormState({
+      setIsSuccess(true);
+      setFormData({
         name: "",
         email: "",
         phone: "",
         subject: "",
-        message: ""
+        message: "",
       });
-
-      toast({
-        title: "Message envoyé",
-        description: "Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.",
-        variant: "default",
-      });
+      toast.success("Votre message a été envoyé avec succès!");
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
-      toast({
-        title: "Erreur",
-        description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'envoi du message",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Contactez-nous</h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Vous avez des questions sur nos services de location de voitures au Maroc ? Notre équipe est là pour vous accompagner dans vos déplacements à travers le Royaume. Utilisez le formulaire ci-dessous ou contactez-nous directement.
-        </p>
-      </div>
-
-      {/* Map Section */}
-      <div className="mb-12 overflow-hidden rounded-lg shadow-md">
-        <h2 className="text-xl font-bold mb-4">Notre Agence Principale à Casablanca</h2>
-        <div className="aspect-video h-[400px] w-full">
-          <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3323.747859745796!2d-7.6185503!3d33.589758899999996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda7d2836cd5afe7%3A0xf2bbf16d26e05e9a!2sAv.%20Hassan%20II%2C%20Casablanca%2C%20Maroc!5e0!3m2!1sfr!2sfr!4v1690368598932!5m2!1sfr!2sfr"
-            width="100%" 
-            height="100%" 
-            style={{ border: 0 }} 
-            allowFullScreen 
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            className="rounded-lg"
-            title="MaxiAuto Casablanca"
-          ></iframe>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        {/* Contact Form */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardContent className="p-6">
-              {isSubmitted ? (
-                <div className="text-center py-12">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                    <CheckCircle className="h-8 w-8 text-green-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">Merci !</h3>
-                  <p className="text-gray-600 mb-6">
-                    Votre message a été envoyé avec succès. Nous vous répondrons dans les plus brefs délais.
-                  </p>
-                  <Button onClick={() => setIsSubmitted(false)}>
-                    Envoyer un Autre Message
-                  </Button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit}>
-                  <h2 className="text-xl font-bold mb-6">Envoyez-nous un Message</h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                        Nom Complet*
-                      </label>
-                      <Input
-                        id="name"
-                        name="name"
-                        value={formState.name}
-                        onChange={handleInputChange}
-                        placeholder="Votre nom"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        Adresse Email*
-                      </label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formState.email}
-                        onChange={handleInputChange}
-                        placeholder="votre.email@exemple.com"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                        Numéro de Téléphone
-                      </label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        value={formState.phone}
-                        onChange={handleInputChange}
-                        placeholder="(123) 456-7890"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
-                        Sujet*
-                      </label>
-                      <Input
-                        id="subject"
-                        name="subject"
-                        value={formState.subject}
-                        onChange={handleInputChange}
-                        placeholder="Comment pouvons-nous vous aider ?"
-                        required
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                        Message*
-                      </label>
-                      <textarea
-                        id="message"
-                        name="message"
-                        rows={5}
-                        value={formState.message}
-                        onChange={handleInputChange}
-                        placeholder="Veuillez fournir des détails sur votre demande..."
-                        className="w-full rounded-md border border-gray-300 px-3 py-2 bg-white text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Envoi en cours...
-                        </>
-                      ) : (
-                        "Envoyer le Message"
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              )}
-            </CardContent>
-          </Card>
+    <div className="bg-white">
+      <div className="container mx-auto px-4 py-10 md:py-16">
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Contactez-nous</h1>
+          <p className="text-gray-600 max-w-2xl mx-auto text-sm md:text-base">
+            Vous avez des questions sur nos services de location de voiture ou vous souhaitez faire une réservation ? Notre équipe est là pour vous aider !
+          </p>
         </div>
 
-        {/* Contact Information */}
-        <div>
-          <Card className="bg-blue-50 border-0">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-bold mb-6">Informations de Contact</h2>
-
-              <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
                 <div className="flex items-start">
-                  <div className="bg-white p-2 rounded-full shadow mr-4">
-                    <MapPin className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900">Notre Adresse</h3>
-                    <address className="not-italic text-gray-600 mt-1">
-                      <p>27 Avenue Hassan II</p>
-                      <p>Casablanca, 20000</p>
-                      <p>Maroc</p>
-                    </address>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <div className="bg-white p-2 rounded-full shadow mr-4">
+                  <div className="bg-blue-100 p-3 rounded-full mr-4">
                     <Phone className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Numéros de Téléphone</h3>
-                    <div className="text-gray-600 mt-1">
-                      <p>Service Client : +212 522 123 456</p>
-                      <p>Réservations : +212 522 234 567</p>
-                      <p>Support d'Urgence : +212 661 345 678</p>
-                    </div>
+                    <h3 className="font-semibold text-lg mb-2">Téléphone</h3>
+                    <p className="text-gray-600 text-sm md:text-base">+212 666 778899</p>
+                    <p className="text-gray-600 text-sm md:text-base">Lun-Sam: 8h-20h</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
+            <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
                 <div className="flex items-start">
-                  <div className="bg-white p-2 rounded-full shadow mr-4">
+                  <div className="bg-blue-100 p-3 rounded-full mr-4">
                     <Mail className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Adresses Email</h3>
-                    <div className="text-gray-600 mt-1">
-                      <p>Informations Générales : info@maxiauto.ma</p>
-                      <p>Support Client : support@maxiauto.ma</p>
-                      <p>Réservations : reservations@maxiauto.ma</p>
-                    </div>
+                    <h3 className="font-semibold text-lg mb-2">Email</h3>
+                    <p className="text-gray-600 text-sm md:text-base">contact@maxautoo.ma</p>
+                    <p className="text-gray-600 text-sm md:text-base">Réponse sous 24h</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
+            <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
                 <div className="flex items-start">
-                  <div className="bg-white p-2 rounded-full shadow mr-4">
-                    <Clock className="h-5 w-5 text-blue-600" />
+                  <div className="bg-blue-100 p-3 rounded-full mr-4">
+                    <MapPin className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-900">Heures d'Ouverture</h3>
-                    <div className="text-gray-600 mt-1">
-                      <p>Lundi - Vendredi : 8h00 - 19h00</p>
-                      <p>Samedi : 9h00 - 17h00</p>
-                      <p>Dimanche : 10h00 - 15h00</p>
-                    </div>
+                    <h3 className="font-semibold text-lg mb-2">Adresse</h3>
+                    <p className="text-gray-600 text-sm md:text-base">123 Avenue Mohammed V</p>
+                    <p className="text-gray-600 text-sm md:text-base">Casablanca, Maroc</p>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Other Locations */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Nos Autres Agences au Maroc</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-bold text-lg mb-2">Marrakech</h3>
-              <address className="not-italic text-gray-600 mb-3">
-                <p>15 Avenue Mohammed V</p>
-                <p>Marrakech, 40000</p>
-                <p>Tél: +212 524 123 456</p>
-              </address>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-bold text-lg mb-2">Rabat</h3>
-              <address className="not-italic text-gray-600 mb-3">
-                <p>8 Rue des FAR</p>
-                <p>Rabat, 10000</p>
-                <p>Tél: +212 537 123 456</p>
-              </address>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-bold text-lg mb-2">Tanger</h3>
-              <address className="not-italic text-gray-600 mb-3">
-                <p>42 Boulevard Mohammed VI</p>
-                <p>Tanger, 90000</p>
-                <p>Tél: +212 539 123 456</p>
-              </address>
+          <div className="lg:col-span-2">
+            <Card className="shadow-md">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl md:text-2xl">Envoyez-nous un message</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {isSuccess ? (
+                  <div className="bg-green-50 p-6 rounded-lg flex flex-col items-center text-center">
+                    <div className="bg-green-100 p-3 rounded-full mb-4">
+                      <Check className="h-6 w-6 text-green-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-green-800 mb-2">Message envoyé avec succès !</h3>
+                    <p className="text-green-700 mb-4">
+                      Merci de nous avoir contactés. Nous vous répondrons dans les plus brefs délais.
+                    </p>
+                    <Button 
+                      onClick={() => setIsSuccess(false)}
+                      className="bg-green-600 hover:bg-green-700 text-white rounded-full"
+                    >
+                      Envoyer un autre message
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                          Nom complet
+                        </label>
+                        <Input
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                          placeholder="Votre nom"
+                          className={`w-full ${errors.name ? "border-red-500" : ""}`}
+                        />
+                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                      </div>
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                          Email
+                        </label>
+                        <Input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          placeholder="Votre email"
+                          className={`w-full ${errors.email ? "border-red-500" : ""}`}
+                        />
+                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                          Téléphone
+                        </label>
+                        <Input
+                          id="phone"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          placeholder="Votre numéro de téléphone"
+                          className={`w-full ${errors.phone ? "border-red-500" : ""}`}
+                        />
+                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                      </div>
+                      <div>
+                        <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                          Sujet
+                        </label>
+                        <Input
+                          id="subject"
+                          name="subject"
+                          value={formData.subject}
+                          onChange={handleChange}
+                          placeholder="Le sujet de votre message"
+                          className={`w-full ${errors.subject ? "border-red-500" : ""}`}
+                        />
+                        {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject}</p>}
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                        Message
+                      </label>
+                      <Textarea
+                        id="message"
+                        name="message"
+                        value={formData.message}
+                        onChange={handleChange}
+                        placeholder="Votre message"
+                        rows={5}
+                        className={`w-full resize-none ${errors.message ? "border-red-500" : ""}`}
+                      />
+                      {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-full py-2 px-6 transition-colors duration-300"
+                    >
+                      {isSubmitting ? (
+                        "Envoi en cours..."
+                      ) : (
+                        <span className="flex items-center">
+                          Envoyer le message
+                          <Send className="ml-2 h-4 w-4" />
+                        </span>
+                      )}
+                    </Button>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        
+        <div className="mt-12 md:mt-16">
+          <Card className="border-none shadow-md overflow-hidden">
+            <CardContent className="p-0">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3323.5598372991343!2d-7.6356698246262595!3d33.59180657339836!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda7d282e477eead%3A0xf9c936a443c6b6c!2sCasablanca%2C%20Morocco!5e0!3m2!1sen!2sus!4v1691854626389!5m2!1sen!2sus"
+                width="100%"
+                height="350"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full"
+                title="Localisation"
+              ></iframe>
             </CardContent>
           </Card>
         </div>

@@ -180,8 +180,9 @@ export default function AddCarPage() {
                   required
                   className="w-full border rounded-md p-2"
                 >
-                  <option value="Manuelle">Manuelle</option>
-                  <option value="Automatique">Automatique</option>
+                  <option value="">Sélectionner une transmission</option>
+                  <option value="manual">Manuelle</option>
+                  <option value="automatic">Automatique</option>
                 </select>
               </div>
               

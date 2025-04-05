@@ -126,8 +126,9 @@ export default function BookingActions({ booking }: BookingActionsProps) {
     <div className="relative">
       <button
         onClick={toggleDropdown}
-        className="text-gray-400 hover:text-gray-600"
+        className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-md hover:bg-gray-100"
         disabled={isLoading}
+        aria-label="Options de réservation"
       >
         <MoreHorizontal className="h-5 w-5" />
       </button>
@@ -138,50 +139,55 @@ export default function BookingActions({ booking }: BookingActionsProps) {
             className="fixed inset-0 z-10"
             onClick={handleOutsideClick}
           ></div>
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-100 overflow-hidden">
             <div className="py-1">
               <Link
                 href={`/admin/bookings/${booking.id}`}
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => setIsDropdownOpen(false)}
               >
-                <Eye className="h-4 w-4 mr-3" />
+                <Eye className="h-4 w-4 mr-3 text-blue-500" />
                 Voir les détails
               </Link>
               
               <Link
                 href={`/admin/bookings/${booking.id}/edit`}
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100"
+                onClick={() => setIsDropdownOpen(false)}
               >
-                <Edit className="h-4 w-4 mr-3" />
+                <Edit className="h-4 w-4 mr-3 text-amber-500" />
                 Modifier
               </Link>
               
               {booking.status === 'pending' && (
                 <button
                   onClick={confirmBooking}
-                  className="flex items-center w-full px-4 py-2 text-sm text-green-700 hover:bg-gray-100"
+                  className="flex items-center w-full px-4 py-2.5 text-sm text-green-700 hover:bg-gray-100"
+                  disabled={isLoading}
                 >
-                  <Check className="h-4 w-4 mr-3" />
-                  Confirmer
+                  <Check className="h-4 w-4 mr-3 text-green-500" />
+                  {isLoading ? 'En cours...' : 'Confirmer'}
                 </button>
               )}
               
               {booking.status !== 'cancelled' && (
                 <button
                   onClick={cancelBooking}
-                  className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-gray-100"
+                  className="flex items-center w-full px-4 py-2.5 text-sm text-red-700 hover:bg-gray-100"
+                  disabled={isLoading}
                 >
-                  <X className="h-4 w-4 mr-3" />
-                  Annuler
+                  <X className="h-4 w-4 mr-3 text-red-500" />
+                  {isLoading ? 'En cours...' : 'Annuler'}
                 </button>
               )}
               
               <button
                 onClick={deleteBooking}
-                className="flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-gray-100"
+                className="flex items-center w-full px-4 py-2.5 text-sm text-red-700 hover:bg-gray-100 border-t border-gray-100"
+                disabled={isLoading}
               >
-                <Trash className="h-4 w-4 mr-3" />
-                Supprimer
+                <Trash className="h-4 w-4 mr-3 text-red-500" />
+                {isLoading ? 'En cours...' : 'Supprimer'}
               </button>
             </div>
           </div>

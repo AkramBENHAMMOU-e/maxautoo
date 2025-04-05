@@ -305,6 +305,17 @@ function BookingForm() {
                       required
                     />
                   </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Exigences Supplémentaires
+                    </label>
+                    <Textarea
+                      placeholder="Avez-vous des demandes particulières pour cette location?"
+                      value={additionalRequirements}
+                      onChange={(e) => setAdditionalRequirements(e.target.value)}
+                      className="h-24"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -316,17 +327,16 @@ function BookingForm() {
 
                 <div className="space-y-4">
                   <div className="flex items-start">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       id="premium-insurance"
                       checked={includePremiumInsurance}
-                      onChange={(e) => setIncludePremiumInsurance(e.target.checked)}
+                      onCheckedChange={(checked) => setIncludePremiumInsurance(checked as boolean)}
                       className="mt-1 mr-3"
                     />
                     <div>
-                      <label htmlFor="premium-insurance" className="font-medium">
+                      <Label htmlFor="premium-insurance" className="font-medium">
                         Assurance Premium (+15€/jour)
-                      </label>
+                      </Label>
                       <p className="text-sm text-gray-500">
                         Couverture sans franchise pour une tranquillité totale
                       </p>
@@ -334,17 +344,16 @@ function BookingForm() {
                   </div>
 
                   <div className="flex items-start">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       id="gps"
                       checked={includeGPS}
-                      onChange={(e) => setIncludeGPS(e.target.checked)}
+                      onCheckedChange={(checked) => setIncludeGPS(checked as boolean)}
                       className="mt-1 mr-3"
                     />
                     <div>
-                      <label htmlFor="gps" className="font-medium">
+                      <Label htmlFor="gps" className="font-medium">
                         GPS (+5€/jour)
-                      </label>
+                      </Label>
                       <p className="text-sm text-gray-500">
                         Restez sur le bon chemin avec notre système GPS premium
                       </p>
@@ -352,17 +361,16 @@ function BookingForm() {
                   </div>
 
                   <div className="flex items-start">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       id="child-seat"
                       checked={includeChildSeat}
-                      onChange={(e) => setIncludeChildSeat(e.target.checked)}
+                      onCheckedChange={(checked) => setIncludeChildSeat(checked as boolean)}
                       className="mt-1 mr-3"
                     />
                     <div>
-                      <label htmlFor="child-seat" className="font-medium">
+                      <Label htmlFor="child-seat" className="font-medium">
                         Siège Enfant (+8€/jour)
-                      </label>
+                      </Label>
                       <p className="text-sm text-gray-500">
                         Siège enfant homologué pour les tout-petits
                       </p>
@@ -377,52 +385,22 @@ function BookingForm() {
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-4">Mode de Paiement</h2>
 
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      id="credit-card"
-                      name="payment-method"
-                      value="credit-card"
-                      checked={paymentMethod === "credit-card"}
-                      onChange={() => setPaymentMethod("credit-card")}
-                      className="mr-3"
-                    />
-                    <label htmlFor="credit-card">
-                      <span className="font-medium">Carte de Crédit</span>
-                    </label>
+                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <RadioGroupItem value="credit-card" id="credit-card" />
+                    <Label htmlFor="credit-card">Carte de Crédit</Label>
                   </div>
 
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      id="paypal"
-                      name="payment-method"
-                      value="paypal"
-                      checked={paymentMethod === "paypal"}
-                      onChange={() => setPaymentMethod("paypal")}
-                      className="mr-3"
-                    />
-                    <label htmlFor="paypal">
-                      <span className="font-medium">PayPal</span>
-                    </label>
+                  <div className="flex items-center space-x-3">
+                    <RadioGroupItem value="paypal" id="paypal" />
+                    <Label htmlFor="paypal">PayPal</Label>
                   </div>
 
-                  <div className="flex items-center">
-                    <input
-                      type="radio"
-                      id="pay-at-pickup"
-                      name="payment-method"
-                      value="pay-at-pickup"
-                      checked={paymentMethod === "pay-at-pickup"}
-                      onChange={() => setPaymentMethod("pay-at-pickup")}
-                      className="mr-3"
-                    />
-                    <label htmlFor="pay-at-pickup">
-                      <span className="font-medium">Payer à la Prise en Charge</span>
-                    </label>
+                  <div className="flex items-center space-x-3">
+                    <RadioGroupItem value="pay-at-pickup" id="pay-at-pickup" />
+                    <Label htmlFor="pay-at-pickup">Payer à la Prise en Charge</Label>
                   </div>
-                </div>
+                </RadioGroup>
 
                 <div className="mt-6">
                   <p className="text-sm text-gray-500">

@@ -151,6 +151,7 @@ export default function EditCarPage({ params }: { params: { id: string } }) {
             className="w-full p-2 border rounded"
             required
           >
+            <option value="">Sélectionner une transmission</option>
             <option value="manual">Manuelle</option>
             <option value="automatic">Automatique</option>
           </select>

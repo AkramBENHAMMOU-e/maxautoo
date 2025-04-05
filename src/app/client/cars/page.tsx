@@ -28,6 +28,8 @@ interface Car {
 export default function CarsListPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [transmissionFilter, setTransmissionFilter] = useState("all");
+  const [seatsFilter, setSeatsFilter] = useState("all");
   const [priceSort, setPriceSort] = useState("default");
   const [showFilters, setShowFilters] = useState(false);
   const [cars, setCars] = useState<Car[]>([]);
@@ -62,7 +64,20 @@ export default function CarsListPage() {
     const matchesSearch = searchString.includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === "all" || car.type === typeFilter;
     const isAvailable = car.status === "available";
-    return matchesSearch && matchesType && isAvailable;
+    
+    // Filtre de transmission
+    const matchesTransmission = transmissionFilter === "all" || 
+      (transmissionFilter === "manual" && /^man/i.test(car.transmission)) ||
+      (transmissionFilter === "automatic" && !/^man/i.test(car.transmission));
+    
+    // Filtre de places
+    const matchesSeats = seatsFilter === "all" || 
+      (seatsFilter === "2" && car.seats <= 2) ||
+      (seatsFilter === "4" && car.seats === 4) ||
+      (seatsFilter === "5" && car.seats === 5) ||
+      (seatsFilter === "7" && car.seats >= 7);
+    
+    return matchesSearch && matchesType && matchesTransmission && matchesSeats && isAvailable;
   });
 
   // Trier les voitures en fonction du prix
@@ -123,10 +138,13 @@ export default function CarsListPage() {
                 className="w-full rounded-md border border-gray-300 px-3 py-2"
               >
                 <option value="all">Tous les types</option>
-                <option value="economy">Économique</option>
-                <option value="luxury">Prestige</option>
-                <option value="suv">4x4 / SUV</option>
-                <option value="sport">Sport</option>
+                <option value="Citadine">Citadine</option>
+                <option value="Berline">Berline</option>
+                <option value="SUV">SUV</option>
+                <option value="4x4">4x4</option>
+                <option value="Coupé">Coupé</option>
+                <option value="Cabriolet">Cabriolet</option>
+                <option value="Utilitaire">Utilitaire</option>
               </select>
             </div>
             <div>
@@ -134,6 +152,8 @@ export default function CarsListPage() {
                 Transmission
               </label>
               <select
+                value={transmissionFilter}
+                onChange={(e) => setTransmissionFilter(e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-3 py-2"
               >
                 <option value="all">Tous les types</option>
@@ -146,6 +166,8 @@ export default function CarsListPage() {
                 Places
               </label>
               <select
+                value={seatsFilter}
+                onChange={(e) => setSeatsFilter(e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-3 py-2"
               >
                 <option value="all">Nombre indifférent</option>
@@ -204,7 +226,7 @@ export default function CarsListPage() {
                       </div>
                       <div className="flex items-center">
                         <CarIcon size={18} className="mr-1" />
-                        {car.transmission === 'manual' ? 'Manuelle' : 'Automatique'}
+                        {car.transmission && /^man/i.test(car.transmission) ? 'Manuelle' : 'Automatique'}
                       </div>
                       <div className="flex items-center">
                         <CalendarClock size={18} className="mr-1" />

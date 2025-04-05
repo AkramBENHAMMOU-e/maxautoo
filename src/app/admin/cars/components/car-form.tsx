@@ -313,8 +313,8 @@ export function CarForm({ car, isEditing = false }: CarFormProps) {
               <SelectValue placeholder="Sélectionner une transmission" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Manuelle">Manuelle</SelectItem>
-              <SelectItem value="Automatique">Automatique</SelectItem>
+              <SelectItem value="manual">Manuelle</SelectItem>
+              <SelectItem value="automatic">Automatique</SelectItem>
             </SelectContent>
           </Select>
         </div>

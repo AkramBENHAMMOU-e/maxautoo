@@ -181,6 +181,7 @@ export default function EditCarPage({ params }: { params: { id: string } }) {
                   className="w-full border rounded-md p-2"
                   defaultValue={car.transmission}
                 >
+                  <option value="">Sélectionner une transmission</option>
                   <option value="manual">Manuelle</option>
                   <option value="automatic">Automatique</option>
                 </select>
