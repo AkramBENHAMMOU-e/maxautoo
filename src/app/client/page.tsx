@@ -184,13 +184,13 @@ export default async function ClientHomePage() {
               featuredCars.map((car) => (
                 <Card key={car.id} className="overflow-hidden border-0 rounded-xl hover:shadow-xl transition-all duration-300 group">
                   <div className="aspect-[16/9] relative">
-                  <Image
-                    src={car.image}
-                    alt={`${car.brand} ${car.model}`}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(max-width: 640px) 95vw, (max-width: 1024px) 45vw, 30vw"
-                  />
+                    <Image
+                      src={car.image || '/placeholder-car.jpg'}
+                      alt={`${car.brand} ${car.model}`}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 640px) 95vw, (max-width: 1024px) 45vw, 30vw"
+                    />
                     <div className="absolute top-2 left-2 md:top-3 md:left-3 bg-blue-600 text-white text-xs px-2 py-0.5 md:px-3 md:py-1 rounded-full font-medium">
                       {car.type}
                     </div>
