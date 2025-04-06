@@ -63,7 +63,7 @@ export function DashboardClient({
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Tableau de bord</h2>
         <div className="flex items-center space-x-2">
           <div className="hidden md:block">
-            <CalendarDateRangePicker />
+          <CalendarDateRangePicker />
           </div>
         </div>
       </div>
@@ -140,7 +140,7 @@ export function DashboardClient({
           <Card className="shadow-sm">
             <CardHeader className="p-4 pb-2">
               <CardTitle className="text-lg font-bold">Réservations récentes</CardTitle>
-            </CardHeader>
+              </CardHeader>
             <CardContent className="p-0 md:p-4">
               {isMobile ? (
                 <div className="space-y-2">
@@ -187,8 +187,8 @@ export function DashboardClient({
               ) : (
                 <BookingsList bookings={bookings} />
               )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
         </TabsContent>
         
         <TabsContent value="bookings" className="space-y-4">

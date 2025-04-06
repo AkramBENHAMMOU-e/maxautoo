@@ -109,8 +109,8 @@ export default function ContactPage() {
           <h1 className="text-3xl md:text-4xl font-bold mb-4">Contactez-nous</h1>
           <p className="text-gray-600 max-w-2xl mx-auto text-sm md:text-base">
             Vous avez des questions sur nos services de location de voiture ou vous souhaitez faire une réservation ? Notre équipe est là pour vous aider !
-          </p>
-        </div>
+        </p>
+      </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
           <div className="lg:col-span-1 space-y-6">
@@ -139,13 +139,13 @@ export default function ContactPage() {
                     <h3 className="font-semibold text-lg mb-2">Email</h3>
                     <p className="text-gray-600 text-sm md:text-base">contact@maxautoo.ma</p>
                     <p className="text-gray-600 text-sm md:text-base">Réponse sous 24h</p>
-                  </div>
-                </div>
+        </div>
+      </div>
               </CardContent>
             </Card>
 
             <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
+            <CardContent className="p-6">
                 <div className="flex items-start">
                   <div className="bg-blue-100 p-3 rounded-full mr-4">
                     <MapPin className="h-5 w-5 text-blue-600" />
@@ -180,33 +180,33 @@ export default function ContactPage() {
                       className="bg-green-600 hover:bg-green-700 text-white rounded-full"
                     >
                       Envoyer un autre message
-                    </Button>
-                  </div>
-                ) : (
+                  </Button>
+                </div>
+              ) : (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                           Nom complet
-                        </label>
-                        <Input
-                          id="name"
-                          name="name"
+                      </label>
+                      <Input
+                        id="name"
+                        name="name"
                           value={formData.name}
                           onChange={handleChange}
-                          placeholder="Votre nom"
+                        placeholder="Votre nom"
                           className={`w-full ${errors.name ? "border-red-500" : ""}`}
-                        />
+                      />
                         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-                      </div>
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    </div>
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                           Email
-                        </label>
-                        <Input
-                          id="email"
-                          name="email"
-                          type="email"
+                      </label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
                           value={formData.email}
                           onChange={handleChange}
                           placeholder="Votre email"
@@ -216,27 +216,27 @@ export default function ContactPage() {
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                    <div>
+                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
                           Téléphone
-                        </label>
-                        <Input
-                          id="phone"
-                          name="phone"
+                      </label>
+                      <Input
+                        id="phone"
+                        name="phone"
                           value={formData.phone}
                           onChange={handleChange}
                           placeholder="Votre numéro de téléphone"
                           className={`w-full ${errors.phone ? "border-red-500" : ""}`}
                         />
                         {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                      </div>
-                      <div>
-                        <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
+                    </div>
+                    <div>
+                      <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
                           Sujet
-                        </label>
-                        <Input
-                          id="subject"
-                          name="subject"
+                      </label>
+                      <Input
+                        id="subject"
+                        name="subject"
                           value={formData.subject}
                           onChange={handleChange}
                           placeholder="Le sujet de votre message"
@@ -274,13 +274,13 @@ export default function ContactPage() {
                         </span>
                       )}
                     </Button>
-                  </form>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </form>
+              )}
+            </CardContent>
+          </Card>
         </div>
-        
+      </div>
+
         <div className="mt-12 md:mt-16">
           <Card className="border-none shadow-md overflow-hidden">
             <CardContent className="p-0">

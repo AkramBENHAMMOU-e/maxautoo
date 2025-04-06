@@ -67,7 +67,7 @@ function BookingForm() {
   // Load car data and populate form from query params
   useEffect(() => {
     async function fetchCarData() {
-      if (carId) {
+    if (carId) {
         try {
           const response = await fetch(`/api/cars/${carId}`);
           if (response.ok) {

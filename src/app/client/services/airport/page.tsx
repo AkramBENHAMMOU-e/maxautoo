@@ -299,7 +299,7 @@ export default function AirportPage() {
             <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
               <Link href="/client/cars">Réserver avec Service Aéroport</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-blue-700">
+            <Button asChild  size="lg" className="bg-blue-700 text-white bg-blue-800">
               <Link href="/client/contact">Questions ? Contactez-nous</Link>
             </Button>
           </div>

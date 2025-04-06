@@ -129,9 +129,9 @@ export default function AdminLayout({
           </div>
           <div className="mt-5 flex-1 flex flex-col px-3">
             <nav className="flex-1 space-y-1">
-              {navigation.map((item) => {
+            {navigation.map((item) => {
                 const active = isActive(item.href);
-                return (
+              return (
                   <Link
                     key={item.name}
                     href={item.href}
@@ -240,9 +240,9 @@ export default function AdminLayout({
                         </span>
                       )}
                     </Link>
-                  );
-                })}
-              </nav>
+              );
+            })}
+        </nav>
             </div>
             <div className="p-4 border-t">
               <Button 

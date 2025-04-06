@@ -4,34 +4,34 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin, Clock } fr
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {/* À propos */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">À Propos</h3>
-            <p className="text-gray-400 mb-4">
+            <h3 className="text-white text-base md:text-lg font-semibold mb-3 md:mb-4">À Propos</h3>
+            <p className="text-gray-400 mb-3 md:mb-4 text-sm md:text-base">
               MaxiAuto est votre partenaire de confiance pour la location de voitures au Maroc. Notre flotte diversifiée répond à tous vos besoins de déplacement dans tout le Royaume.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3 md:space-x-4">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Facebook size={20} />
+                <Facebook size={18} className="md:h-5 md:w-5" />
               </a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Twitter size={20} />
+                <Twitter size={18} className="md:h-5 md:w-5" />
               </a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Instagram size={20} />
+                <Instagram size={18} className="md:h-5 md:w-5" />
               </a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Linkedin size={20} />
+                <Linkedin size={18} className="md:h-5 md:w-5" />
               </a>
             </div>
           </div>
 
           {/* Liens Rapides */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">Liens Rapides</h3>
-            <ul className="space-y-2">
+            <h3 className="text-white text-base md:text-lg font-semibold mb-3 md:mb-4">Liens Rapides</h3>
+            <ul className="space-y-1.5 md:space-y-2 text-sm md:text-base">
               <li>
                 <Link href="/client/cars" className="text-gray-400 hover:text-white transition-colors">
                   Notre Flotte
@@ -57,8 +57,8 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">Nos Services</h3>
-            <ul className="space-y-2">
+            <h3 className="text-white text-base md:text-lg font-semibold mb-3 md:mb-4">Nos Services</h3>
+            <ul className="space-y-1.5 md:space-y-2 text-sm md:text-base">
               <li>
                 <Link href="/client/services/insurance" className="text-gray-400 hover:text-white transition-colors">
                   Assurance Tous Risques
@@ -84,10 +84,10 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">Contact</h3>
-            <ul className="space-y-3">
+            <h3 className="text-white text-base md:text-lg font-semibold mb-3 md:mb-4">Contact</h3>
+            <ul className="space-y-2 md:space-y-3 text-sm md:text-base">
               <li className="flex items-start">
-                <MapPin size={20} className="mr-2 mt-1" />
+                <MapPin size={16} className="mr-2 mt-1 md:h-5 md:w-5" />
                 <span className="text-gray-400">
                   27 Avenue Hassan II<br />
                   Casablanca, 20000<br />
@@ -95,15 +95,15 @@ export default function Footer() {
                 </span>
               </li>
               <li className="flex items-center">
-                <Phone size={20} className="mr-2" />
+                <Phone size={16} className="mr-2 md:h-5 md:w-5" />
                 <span className="text-gray-400">+212 522 123 456</span>
               </li>
               <li className="flex items-center">
-                <Mail size={20} className="mr-2" />
+                <Mail size={16} className="mr-2 md:h-5 md:w-5" />
                 <span className="text-gray-400">contact@maxiauto.ma</span>
               </li>
               <li className="flex items-center">
-                <Clock size={20} className="mr-2" />
+                <Clock size={16} className="mr-2 md:h-5 md:w-5" />
                 <span className="text-gray-400">
                   Lun-Sam: 8h30-20h00<br />
                   Dim: 9h00-17h00
@@ -114,16 +114,16 @@ export default function Footer() {
         </div>
 
         {/* Barre de séparation */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
+        <div className="border-t border-gray-800 mt-8 md:mt-12 pt-6 md:pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-400 text-xs md:text-sm text-center md:text-left">
               © {new Date().getFullYear()} MaxiAuto. Tous droits réservés. RC: 123456 - IF: 87654321 - CNSS: 9876543
             </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link href="/client/privacy" className="text-gray-400 hover:text-white text-sm transition-colors">
+            <div className="flex space-x-4 md:space-x-6 mt-3 md:mt-0">
+              <Link href="/client/privacy" className="text-gray-400 hover:text-white text-xs md:text-sm transition-colors">
                 Politique de Confidentialité
               </Link>
-              <Link href="/client/terms" className="text-gray-400 hover:text-white text-sm transition-colors">
+              <Link href="/client/terms" className="text-gray-400 hover:text-white text-xs md:text-sm transition-colors">
                 Conditions d'Utilisation
               </Link>
             </div>
