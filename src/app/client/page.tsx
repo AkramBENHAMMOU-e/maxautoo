@@ -65,12 +65,29 @@ export default async function ClientHomePage() {
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 py-8 md:py-16 lg:py-20 overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 items-center">
-            <div className="text-white">
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 md:gap-8 items-center">
+            {/* Image en premier sur mobile, à droite sur desktop */}
+            <div className="w-full order-1 lg:order-2 h-full overflow-hidden rounded-xl md:rounded-2xl shadow-lg md:shadow-2xl mb-6 lg:mb-0">
+              <div className="relative w-full overflow-hidden rounded-xl aspect-[4/3] sm:aspect-[16/9] lg:aspect-auto lg:h-[450px]">
+                <Image
+                  src="/hero-car.jpg"
+                  alt="Location de voitures de luxe au Maroc"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 50vw"
+                  priority
+                />
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent h-1/3"></div>
+              </div>
+            </div>
+            
+            {/* Texte et boutons en second sur mobile, à gauche sur desktop */}
+            <div className="text-white order-2 lg:order-1">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-3 md:mb-4">
                 Location de voitures au <span className="text-blue-400">Maroc</span> sans tracas
               </h1>
-              <p className="text-sm md:text-base lg:text-lg text-blue-100 mb-5 md:mb-8 leading-relaxed max-w-xl">
+              
+              <p className="hidden lg:block text-sm md:text-base lg:text-lg text-blue-100 mb-5 md:mb-8 leading-relaxed max-w-xl">
                 Des véhicules de qualité et un service client exceptionnel pour un voyage inoubliable à travers le Maroc. Prix transparents, sans frais cachés.
               </p>
               
@@ -108,21 +125,6 @@ export default async function ClientHomePage() {
                   </div>
                   <span className="text-xs md:text-base">Annulation gratuite</span>
                 </div>
-              </div>
-            </div>
-          
-            {/* Image statique remplaçant le carousel */}
-            <div className="w-full h-full overflow-hidden rounded-xl md:rounded-2xl shadow-lg md:shadow-2xl mt-6 lg:mt-0">
-              <div className="relative w-full overflow-hidden rounded-xl aspect-[4/3] sm:aspect-[16/9] lg:aspect-auto lg:h-[450px]">
-                <Image
-                  src="/hero-car.jpg"
-                  alt="Location de voitures de luxe au Maroc"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 50vw"
-                  priority
-                />
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent h-1/3"></div>
               </div>
             </div>
           </div>

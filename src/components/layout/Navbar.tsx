@@ -27,9 +27,7 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Button asChild variant="outline">
-            <Link href="/admin">Espace Admin</Link>
-          </Button>
+          {/* Bouton Espace Admin supprimé */}
         </div>
       </div>
     </header>
