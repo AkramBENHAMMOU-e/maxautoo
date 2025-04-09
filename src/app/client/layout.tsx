@@ -7,6 +7,10 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
+// Désactiver la mise en cache pour les pages client
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function RootLayout({
   children,
 }: Readonly<{

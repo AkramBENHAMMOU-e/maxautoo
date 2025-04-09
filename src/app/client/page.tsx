@@ -21,6 +21,9 @@ async function getFeaturedCars() {
       }
     });
     
+    // Vérifions que les voitures ont bien les champs requis
+    console.log("Voitures trouvées pour l'accueil:", cars.length);
+    
     return cars;
   } catch (error) {
     console.error("Erreur lors de la récupération des voitures en vedette:", error);
@@ -45,11 +48,17 @@ async function getAvailableCars() {
   }
 }
 
+// Ajouter cette nouvelle option d'export pour désactiver le cache de la page
+export const revalidate = 0; // Revalidation à chaque requête
+
 export default async function ClientHomePage() {
   // Récupérer les voitures en vedette
   const featuredCars = await getFeaturedCars();
   // Récupérer toutes les voitures disponibles
   const availableCars = await getAvailableCars();
+  
+  // Log pour débogage
+  console.log(`Page d'accueil: ${featuredCars.length} voitures en vedette, ${availableCars.length} voitures disponibles`);
 
   return (
     <div className="bg-white">
@@ -180,7 +189,7 @@ export default async function ClientHomePage() {
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
-            {featuredCars.length > 0 ? (
+            {featuredCars && featuredCars.length > 0 ? (
               featuredCars.map((car) => (
                 <Card key={car.id} className="overflow-hidden border-0 rounded-xl hover:shadow-xl transition-all duration-300 group">
                   <div className="aspect-[16/9] relative">
